@@ -1,48 +1,61 @@
 package me.spirafy.game;
 
 /*
- * This code was originally designed and coded by Swords1234.
+ * Copyright © 2018 by Ibrahim Hizamul Ansari. All rights reserved.
+ * This code may not be copied, reproduced or distributed without permission from the owner.
  * You may contact by his email: Nintendodeveloper8@gmail.com
  * You can also contact him by his Discord: sword1234#6398
  */
 
 import me.spirafy.engine.Engine;
 import me.spirafy.engine.arenas.Arena;
+import org.bukkit.Bukkit;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
-import org.bukkit.event.EventHandler;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class main extends JavaPlugin implements me.spirafy.engine.GameMethods{
 
-    public Engine eng;
+    private Engine eng;
 
     @Override
     public void onEnable(){
-        eng = new Engine(this, this);
+        eng = new Engine(this, "Test", this);
+        eng.getAm().loadArena();
+        eng.getAm().addArena("Test arena", 4, 8, new Location(Bukkit.getWorld("world"), 0, 0, 0));
+    }
+
+    @Override
+    public void onDisable(){
+        eng.getAm().clear();
+        eng.getAm().storeArena();
     }
 
     @Override
     public void preLoad(Arena a) {
-        //Place intitialization methods here
-    }
+        eng.getEm().listen((PlayerJoinEvent e) -> {
+            a.addPlayer(e.getPlayer());
+            a.update(false);
+        }, this);
 
-    @EventHandler
-    public void onPlayer(PlayerInteractEvent e){
-        if(eng.getAm().getArenaPlayer().contains(e.getPlayer())){
-            ((Arena)eng.getAm().getLists().get(e.getPlayer())).removePlayer(e.getPlayer());
-            ((Arena) eng.getAm().getLists().get(e.getPlayer())).update();
-        }
+        //Place intitialization methods here
     }
 
     @Override
     public void onStart(Arena a) {
+
         //start things
     }
 
     @Override
     public void midGame(Arena a) {
-
+        eng.getEm().listen((PlayerInteractEvent e) -> {
+            if (a.getPlayers().contains(e.getPlayer())){
+                e.setCancelled(true);
+            }
+        }, this);
     }
 
     @Override
@@ -57,16 +70,15 @@ public class main extends JavaPlugin implements me.spirafy.engine.GameMethods{
     }
 
     @Override
-    public void playerJoin(Player p, Arena a) {
-        if(a.getPlayers().size() <= 2){
-            a.start();
-        }
-    }
-
-    @Override
-    public void update(Arena a) {
-        if(a.getPlayers().size() == 1){
-            a.end();
+    public void update(Arena a, boolean started) {
+        if(started) {
+            if (a.getPlayers().size() == 1) {
+                a.end();
+            }
+        } else {
+            if (a.getPlayers().size() > a.getMinPLayers()){
+                a.preStart();
+            }
         }
     }
 }

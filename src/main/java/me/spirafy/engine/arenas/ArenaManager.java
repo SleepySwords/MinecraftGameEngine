@@ -1,7 +1,8 @@
 package me.spirafy.engine.arenas;
 
 /*
- * This code was originally designed and coded by Swords1234.
+ * Copyright © 2018 by Ibrahim Hizamul Ansari. All rights reserved.
+ * This code may not be copied, reproduced or distributed without permission from the owner.
  * You may contact by his email: Nintendodeveloper8@gmail.com
  * You can also contact him by his Discord: sword1234#6398
  */
@@ -9,15 +10,17 @@ package me.spirafy.engine.arenas;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.spirafy.engine.Engine;
+import org.bukkit.Bukkit;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 import java.util.ArrayList;
+import java.util.IdentityHashMap;
 import java.util.List;
 
 public class ArenaManager {
 
-    List<Arena> arenas = new ArrayList<Arena>();
+    IdentityHashMap<String, Arena> arenas = new IdentityHashMap<>();
 
     public Multimap<Object, Object> getLists() {
         return lists;
@@ -25,7 +28,7 @@ public class ArenaManager {
 
     Engine engine;
 
-    public List<Player> getArenaPlayer() {
+    private List<Player> getArenaPlayer() {
         return arenaPlayer;
     }
 
@@ -33,7 +36,7 @@ public class ArenaManager {
 
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
 
-    public List<Arena> getArenas() {
+    public IdentityHashMap<String, Arena> getArenas() {
         return arenas;
     }
 
@@ -43,13 +46,51 @@ public class ArenaManager {
 
     public void addArena(String name, int minPlayers, int maxPlayers, Location spawn){
         Arena a = new Arena(name, minPlayers, maxPlayers, spawn, engine);
-        arenas.add(a);
+        arenas.put(name, a);
         lists.put(name, a);
+    }
+
+    public void removeArena(String name){
+        arenas.remove(name);
+        engine.getArenaCm().getConfig().set("Arenas." + name, null);
     }
 
     public void addPlayer(Player p, String st){
         lists.put(p, lists.get(st));
         ((Arena)lists.get(st)).addPlayer(p);
+    }
 
+    public void storeArena(){
+        for (String name : arenas.keySet()){
+            Arena a = arenas.get(name);
+
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".engine", engine.getName());
+
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMinPLayers());
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMaxPlayers());
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.x", a.getSpawn().getX());
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.y", a.getSpawn().getY());
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.z", a.getSpawn().getZ());
+            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.world", a.getWorldName());
+        }
+    }
+
+    public void loadArena(){
+        for (String st : engine.getArenaCm().getConfig().getConfigurationSection("Arenas").getKeys(false)){
+            int minPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".minPlayers");
+            int maxPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".maxPlayer");
+            double spawnX = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.x");
+            double spawnY = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.y");
+            double spawnZ = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.z");
+            String spawnWorld = engine.getArenaCm().getConfig().getString("Arenas." + st + ".spawn.world");
+            Location spawn = new Location(Bukkit.getWorld(spawnWorld), spawnX, spawnY, spawnZ);
+
+            Arena a = new Arena(st, minPlayer, maxPlayer, spawn, engine);
+            arenas.put(st, a);
+        }
+    }
+
+    public void clear(){
+        engine.getArenaCm().getConfig().set("Arenas", null);
     }
 }

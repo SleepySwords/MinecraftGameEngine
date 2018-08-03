@@ -1,7 +1,8 @@
 package me.spirafy.engine.arenas;
 
 /*
- * This code was originally designed and coded by Swords1234.
+ * Copyright © 2018 by Ibrahim Hizamul Ansari. All rights reserved.
+ * This code may not be copied, reproduced or distributed without permission from the owner.
  * You may contact by his email: Nintendodeveloper8@gmail.com
  * You can also contact him by his Discord: sword1234#6398
  */
@@ -9,7 +10,7 @@ package me.spirafy.engine.arenas;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.spirafy.engine.Engine;
-import me.spirafy.engine.utils.WorldManager;
+import me.spirafy.engine.managers.WorldManager;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
@@ -22,16 +23,18 @@ public class Arena {
     private int minPLayers;
     private int maxPlayers;
     private Location spawn;
+    private String worldName;
 
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
     private ArrayList<Player> players = new ArrayList<Player>();
     private ArrayList<Player> spectators = new ArrayList<Player>();
 
-    GameState state;
-    Engine engInstance;
-    WorldManager manager;
+    public GameState state;
+    private Engine engInstance;
+    private WorldManager manager;
 
-    public Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance){
+    Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance){
+        this.worldName = spawn.getWorld().getName();
         this.manager = new WorldManager();
         this.name = name;
         this.minPLayers = minPLayers;
@@ -48,13 +51,18 @@ public class Arena {
         engInstance.getGm().onEnd(this);
     }
 
-    public void start(){
+    public void preStart(){
         engInstance.getGm().onStart(this);
         state = GameState.STARTING;
     }
 
-    public void update(){
-        engInstance.getGm().update(this);
+    public void start(){
+        engInstance.getGm().midGame(this);
+        state = GameState.MIDGAME;
+    }
+
+    public void update(boolean started){
+        engInstance.getGm().update(this, started);
     }
 
     public ArrayList<Player> getPlayers(){
@@ -63,7 +71,6 @@ public class Arena {
 
     public void addPlayer(Player p){
         players.add(p);
-        engInstance.getGm().playerJoin(p, this);
     }
 
     public void removePlayer(Player p){
@@ -121,6 +128,10 @@ public class Arena {
 
     public ArrayList<Player> getSpectators() {
         return spectators;
+    }
+
+    public String getWorldName() {
+        return worldName;
     }
 }
 enum GameState{
