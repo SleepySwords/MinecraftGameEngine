@@ -26,7 +26,7 @@ public class ArenaManager {
         return lists;
     }
 
-    Engine engine;
+    private Engine engine;
 
     private List<Player> getArenaPlayer() {
         return arenaPlayer;

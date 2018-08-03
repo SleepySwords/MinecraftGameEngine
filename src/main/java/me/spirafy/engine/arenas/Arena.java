@@ -19,7 +19,6 @@ import java.util.ArrayList;
 public class Arena {
     private String name;
 
-
     private int minPLayers;
     private int maxPlayers;
     private Location spawn;
@@ -29,7 +28,7 @@ public class Arena {
     private ArrayList<Player> players = new ArrayList<Player>();
     private ArrayList<Player> spectators = new ArrayList<Player>();
 
-    public GameState state;
+    private GameState state;
     private Engine engInstance;
     private WorldManager manager;
 
@@ -49,6 +48,7 @@ public class Arena {
 
     public void end(){
         engInstance.getGm().onEnd(this);
+        state = GameState.ENDING;
     }
 
     public void preStart(){
@@ -76,6 +76,11 @@ public class Arena {
     public void removePlayer(Player p){
         players.remove(p);
         spectators.add(p);
+    }
+
+    public void removeSpectator(Player p){
+        players.remove(p);
+        spectators.remove(p);
     }
 
     public void addItem(Object identifier, Object value){

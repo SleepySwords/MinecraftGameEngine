@@ -45,7 +45,6 @@ public class main extends JavaPlugin implements me.spirafy.engine.GameMethods{
 
     @Override
     public void onStart(Arena a) {
-
         //start things
     }
 
@@ -54,6 +53,8 @@ public class main extends JavaPlugin implements me.spirafy.engine.GameMethods{
         eng.getEm().listen((PlayerInteractEvent e) -> {
             if (a.getPlayers().contains(e.getPlayer())){
                 e.setCancelled(true);
+                a.removePlayer(e.getPlayer());
+                a.update(true);
             }
         }, this);
     }
