@@ -9,22 +9,32 @@ package me.spirafy.engine.utils;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+import org.bukkit.plugin.Plugin;
+import org.bukkit.scheduler.BukkitRunnable;
 import org.bukkit.scoreboard.DisplaySlot;
 import org.bukkit.scoreboard.Objective;
 import org.bukkit.scoreboard.Scoreboard;
 import org.bukkit.scoreboard.Team;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class ScoreboardUtil {
-    private boolean animated = false;
+    private int frame;
     private List<Player> players = new ArrayList<>();
     private Scoreboard scoreboard;
     private List<Team> teams = new ArrayList<>();
-    Objective o;
+    private Objective o;
+    private Plugin instance;
 
-    public ScoreboardUtil(String name){
+    private long speed;
+
+    Map<Integer, Map<Integer, String>> frames = new HashMap<>();
+
+    public ScoreboardUtil(String name, Plugin plugin){
+        this.instance = plugin;
         scoreboard = Bukkit.getScoreboardManager().getNewScoreboard();
         Team team = scoreboard.registerNewTeam(name);
         teams.add(team);
@@ -34,11 +44,36 @@ public class ScoreboardUtil {
         o.setDisplayName(name);
     }
 
-    public void addEntry(String name, int slot){
-        o.getScore(name).setScore(slot);
+    public ScoreboardUtil setFrameSlot(String name, int slot, int frame){
+        if (!frames.containsKey(frame)){
+            frames.put(frame, new HashMap<>());
+        }
+
+        frames.get(frame).put(slot, name);
+        return this;
     }
 
-    public void removeEntry(String name){
+    public ScoreboardUtil setSpeed(long speed){
+        this.speed = speed;
+        return this;
+    }
 
+    public void activate(){
+        new BukkitRunnable(){
+            @Override
+            public void run() {
+                update();
+            }
+        }.runTaskTimer(instance, 0L, 20L * speed);
+    }
+
+    private void update(){
+        for (int i = 0; i < frames.get(frame).size(); i++){
+            o.getScore(frames.get(frame).get(i)).setScore(i);
+        }
+        frame++;
+        if (frames.size() > frame){
+            frame = 0;
+        }
     }
 }
