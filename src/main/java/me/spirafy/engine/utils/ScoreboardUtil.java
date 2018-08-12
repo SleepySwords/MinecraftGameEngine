@@ -53,6 +53,16 @@ public class ScoreboardUtil {
         return this;
     }
 
+    public ScoreboardUtil setBlankSpot(int slot, int frame){
+        if (!frames.containsKey(frame)){
+            frames.put(frame, new HashMap<>());
+        }
+
+        frames.get(frame).put(slot, "");
+        return this;
+    }
+
+
     public ScoreboardUtil setSpeed(long speed){
         this.speed = speed;
         return this;
@@ -75,5 +85,15 @@ public class ScoreboardUtil {
         if (frames.size() > frame){
             frame = 0;
         }
+    }
+
+    public void addPlayer(Player p){
+        players.add(p);
+        p.setScoreboard(scoreboard);
+    }
+
+    public void removePlayer(Player p){
+        players.add(p);
+        p.setScoreboard(Bukkit.getScoreboardManager().getNewScoreboard());
     }
 }

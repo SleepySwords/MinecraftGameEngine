@@ -6,6 +6,7 @@ package me.spirafy.engine;
  * You can also contact him by his Discord: sword1234#6398
  */
 
+import me.spirafy.engine.arenas.Arena;
 import me.spirafy.engine.arenas.ArenaManager;
 import me.spirafy.engine.managers.ConfigManager;
 import me.spirafy.engine.managers.EventManager;
@@ -13,7 +14,7 @@ import org.bukkit.plugin.Plugin;
 
 public class Engine {
 
-    private GameMethods gm;
+    private Arena.GameMethods gm;
     private ArenaManager am;
     private EventManager em;
     private ConfigManager ArenaCm;
@@ -23,12 +24,13 @@ public class Engine {
         return em;
     }
 
-    public Engine(GameMethods gm, String name, Plugin instance){
+    public Engine(Arena.GameMethods gm, String name, Plugin instance){
         this.name = name;
         ArenaCm = new ConfigManager(name + "Arenas.yml", instance);
         //this.em = new EventManager(instance);
 
         this.gm = gm;
+        em = new EventManager();
         am = new ArenaManager(this);
     }
 
@@ -40,7 +42,7 @@ public class Engine {
         return ArenaCm;
     }
 
-    public GameMethods getGm() {
+    public Arena.GameMethods getGm() {
         return gm;
     }
 

@@ -76,17 +76,19 @@ public class ArenaManager {
     }
 
     public void loadArena(){
-        for (String st : engine.getArenaCm().getConfig().getConfigurationSection("Arenas").getKeys(false)){
-            int minPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".minPlayers");
-            int maxPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".maxPlayer");
-            double spawnX = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.x");
-            double spawnY = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.y");
-            double spawnZ = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.z");
-            String spawnWorld = engine.getArenaCm().getConfig().getString("Arenas." + st + ".spawn.world");
-            Location spawn = new Location(Bukkit.getWorld(spawnWorld), spawnX, spawnY, spawnZ);
+        if (engine.getArenaCm().getConfig().getConfigurationSection("Arenas") != null) {
+            for (String st : engine.getArenaCm().getConfig().getConfigurationSection("Arenas").getKeys(false)) {
+                int minPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".minPlayers");
+                int maxPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".maxPlayer");
+                double spawnX = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.x");
+                double spawnY = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.y");
+                double spawnZ = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.z");
+                String spawnWorld = engine.getArenaCm().getConfig().getString("Arenas." + st + ".spawn.world");
+                Location spawn = new Location(Bukkit.getWorld(spawnWorld), spawnX, spawnY, spawnZ);
 
-            Arena a = new Arena(st, minPlayer, maxPlayer, spawn, engine);
-            arenas.put(st, a);
+                Arena a = new Arena(st, minPlayer, maxPlayer, spawn, engine);
+                arenas.put(st, a);
+            }
         }
     }
 

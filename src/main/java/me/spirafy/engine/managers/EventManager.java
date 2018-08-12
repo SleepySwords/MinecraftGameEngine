@@ -7,11 +7,11 @@ package me.spirafy.engine.managers;
  */
 
 
+import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.plugin.Plugin;
-import org.bukkit.plugin.RegisteredListener;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -25,9 +25,16 @@ public class EventManager implements Listener {
     public List<Map<Object, Object>> maps = new ArrayList<>();
 
     public <T extends Event> void listen(Consumer<T> type, Plugin main){
+
+        //getting the class from the consumer.
         Class<T> tClass = (Class<T>) TypeResolver.resolveRawArgument(Consumer.class, type.getClass());
 
+        //making the consumer an event
         Consumer<Event> eventConsumer = (Consumer<Event>) type;
-        tClass.cast(Event.class).getHandlers().register(new RegisteredListener(this, ((listener, event) -> eventConsumer.accept(event)), EventPriority.LOW, main, false));
+
+        //registering a listener to be user
+        //Listener listener = new Listener(this, ((listener1, event) -> eventConsumer.accept(event)), EventPriority.LOW, main, false);
+
+        Bukkit.getPluginManager().registerEvent(tClass, this, EventPriority.NORMAL, ((listener1, event) -> eventConsumer.accept(event)), main);
     }
 }

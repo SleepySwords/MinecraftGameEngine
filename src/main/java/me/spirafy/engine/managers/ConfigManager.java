@@ -24,7 +24,12 @@ public class ConfigManager {
 
         if(!configFile.exists()){
             configFile.getParentFile().mkdirs();
-            instance.saveResource(fileName, false);
+            try {
+                configFile.createNewFile();
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            //instance.saveResource(fileName, false);
         }
 
         config = new YamlConfiguration();

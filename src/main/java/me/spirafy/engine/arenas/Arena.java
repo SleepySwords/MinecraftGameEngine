@@ -49,7 +49,7 @@ public class Arena {
         engInstance.getGm().onEnd(this);
         state = GameState.ENDING;
     }
-
+//hi
     public void preStart(){
         engInstance.getGm().onStart(this);
         state = GameState.STARTING;
@@ -141,7 +141,21 @@ public class Arena {
     public WorldManager getManager() {
         return manager;
     }
-}
-enum GameState{
-    LOBBY, STARTING, MIDGAME, ENDING
+
+    public GameState getState() {
+        return state;
+    }
+
+    public interface GameMethods {
+        void preLoad(Arena a);
+
+        void onStart(Arena a);
+
+        void midGame(Arena a);
+
+        void onEnd(Arena a);
+
+        void update(Arena a, boolean started);
+    }
+
 }
