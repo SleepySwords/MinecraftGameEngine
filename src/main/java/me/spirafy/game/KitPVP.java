@@ -14,6 +14,7 @@ import me.spirafy.engine.phase.onStart;
 import me.spirafy.engine.utils.ScoreboardUtil;
 import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
@@ -35,6 +36,8 @@ public class KitPVP {
         eng.getArenaManager().getArenas().forEach((s, arena) -> {
             arena.registerPhase(new onStart(), "start");
             arena.setPhase("start");
+            arena.addTeam("Blue", Color.BLUE);
+            arena.addTeam("red", Color.BLUE);
         });
 
         util = new ScoreboardUtil("KitPVP", main);
