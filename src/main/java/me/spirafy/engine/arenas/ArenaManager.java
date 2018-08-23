@@ -20,7 +20,7 @@ import java.util.List;
 
 public class ArenaManager {
 
-    IdentityHashMap<String, Arena> arenas = new IdentityHashMap<>();
+    private IdentityHashMap<String, Arena> arenas = new IdentityHashMap<>();
 
     public Multimap<Object, Object> getLists() {
         return lists;
@@ -32,7 +32,7 @@ public class ArenaManager {
         return arenaPlayer;
     }
 
-    List<Player> arenaPlayer = new ArrayList<>();
+    private List<Player> arenaPlayer = new ArrayList<>();
 
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
 
