@@ -6,9 +6,6 @@ package me.spirafy.engine.phase;
  * You can also contact him by his Discord: sword1234#6398
  */
 
-import me.spirafy.engine.Engine;
-import me.spirafy.engine.arenas.Arena;
-import org.bukkit.entity.Player;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 public class onStart extends Phase {

@@ -13,40 +13,39 @@ import me.spirafy.engine.managers.EventManager;
 import org.bukkit.plugin.Plugin;
 
 public class Engine {
-
-    private Arena.GameMethods gm;
-    private ArenaManager am;
-    private EventManager em;
-    private ConfigManager ArenaCm;
+    private ArenaManager arenaManager;
+    private EventManager eventManager;
+    private ConfigManager ArenaConfigManager;
     private String name;
+    private Plugin instance;
 
-    public EventManager getEm() {
-        return em;
+    public EventManager getEventManager() {
+        return eventManager;
     }
 
-    public Engine(Arena.GameMethods gm, String name, Plugin instance){
+    public Engine(String name, Plugin instance){
+        this.instance = instance;
         this.name = name;
-        ArenaCm = new ConfigManager(name + "Arenas.yml", instance);
+        ArenaConfigManager = new ConfigManager(name + "Arenas.yml", instance);
         //this.em = new EventManager(instance);
 
-        this.gm = gm;
-        em = new EventManager();
-        am = new ArenaManager(this);
+        eventManager = new EventManager();
+        arenaManager = new ArenaManager(this);
     }
 
-    public ArenaManager getAm() {
-        return am;
+    public ArenaManager getArenaManager() {
+        return arenaManager;
     }
 
-    public ConfigManager getArenaCm() {
-        return ArenaCm;
-    }
-
-    public Arena.GameMethods getGm() {
-        return gm;
+    public ConfigManager getArenaConfigManager() {
+        return ArenaConfigManager;
     }
 
     public String getName() {
         return name;
+    }
+
+    public Plugin getInstance() {
+        return instance;
     }
 }

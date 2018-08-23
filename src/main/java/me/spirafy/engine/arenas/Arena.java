@@ -9,14 +9,21 @@ package me.spirafy.engine.arenas;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.spirafy.engine.Engine;
+import me.spirafy.engine.managers.Team;
 import me.spirafy.engine.managers.WorldManager;
+import me.spirafy.engine.phase.Phase;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
+import javax.xml.ws.Holder;
+import java.util.*;
+import java.util.function.Predicate;
+import java.util.stream.Stream;
 
 public class Arena {
     private String name;
+    private Engine engine;
 
     private int minPLayers;
     private int maxPlayers;
@@ -24,14 +31,20 @@ public class Arena {
     private String worldName;
 
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
-    private ArrayList<Player> players = new ArrayList<Player>();
+    private ArrayList<Player> onlinePlayer = new ArrayList<Player>();
+    private ArrayList<Player> players = new ArrayList<>();
     private ArrayList<Player> spectators = new ArrayList<Player>();
 
+
+    private Map<String, Phase> registeredPhases = new IdentityHashMap<>();
+    private Phase currentPhase;
+
     private GameState state;
-    private Engine engInstance;
+    private List<Team> teams = new ArrayList<>();
     private WorldManager manager;
 
-    Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance){
+    public Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance){
+        this.engine = engInstance;
         this.worldName = spawn.getWorld().getName();
         this.manager = new WorldManager();
         this.name = name;
@@ -40,32 +53,12 @@ public class Arena {
         this.spawn = spawn;
         this.spawn.setWorld(manager.copyFolder(spawn.getWorld(), "tmp_" + name));
         this.spawn = spawn;
-        this.engInstance = engInstance;
-        engInstance.getGm().preLoad(this);
+        //todo replace
         state = GameState.LOBBY;
     }
 
-    public void end(){
-        engInstance.getGm().onEnd(this);
-        state = GameState.ENDING;
-    }
-//hi
-    public void preStart(){
-        engInstance.getGm().onStart(this);
-        state = GameState.STARTING;
-    }
-
-    public void start(){
-        engInstance.getGm().midGame(this);
-        state = GameState.MIDGAME;
-    }
-
-    public void update(boolean started){
-        engInstance.getGm().update(this, started);
-    }
-
     public ArrayList<Player> getPlayers(){
-        return players;
+        return  players;
     }
 
     public void addPlayer(Player p){
@@ -146,16 +139,44 @@ public class Arena {
         return state;
     }
 
-    public interface GameMethods {
-        void preLoad(Arena a);
 
-        void onStart(Arena a);
+    public void registerPhase(Phase phase, String name){
+        registeredPhases.put(name, phase);
 
-        void midGame(Arena a);
-
-        void onEnd(Arena a);
-
-        void update(Arena a, boolean started);
     }
 
+    public void setPhase(String name){
+        currentPhase.setEnable(false);
+        currentPhase = registeredPhases.get(name);
+        currentPhase.setEngine(engine);
+        currentPhase.setArena(this).setEnable(true);
+        currentPhase.executeOnStart();
+        currentPhase.start();
+    }
+
+    public void addTeam(String name, Color color){
+        teams.add(new Team(name, color));
+    }
+
+    public void removeTeam(String name){
+        Stream<Team> streams = teams.stream().filter(team -> team.getTeamName().equals(name));
+        Iterator<Team> iterator = streams.iterator();
+        while (iterator.hasNext()){
+            teams.remove(iterator.next());
+        }
+    }
+
+    public void addPlayerToTeam(Player player, String name) {
+        Stream<Team> streams = teams.stream().filter(team -> team.getTeamName().equals(name));
+        Iterator<Team> iterator = streams.iterator();
+        iterator.next().addPlayer(player);
+    }
+
+    public void removePlayerFromTeams(Player player) {
+        Stream<Team> streams = teams.stream().filter(team -> team.getPlayers().contains(player));
+        Iterator<Team> iterator = streams.iterator();
+        while (iterator.hasNext()) {
+            iterator.next().removePlayer(player);
+        }
+    }
 }
