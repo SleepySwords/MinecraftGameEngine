@@ -20,7 +20,7 @@ import java.util.List;
 
 public class ArenaManager {
 
-    IdentityHashMap<String, Arena> arenas = new IdentityHashMap<>();
+    private IdentityHashMap<String, Arena> arenas = new IdentityHashMap<>();
 
     public Multimap<Object, Object> getLists() {
         return lists;
@@ -32,7 +32,7 @@ public class ArenaManager {
         return arenaPlayer;
     }
 
-    List<Player> arenaPlayer = new ArrayList<>();
+    private List<Player> arenaPlayer = new ArrayList<>();
 
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
 
@@ -52,7 +52,7 @@ public class ArenaManager {
 
     public void removeArena(String name){
         arenas.remove(name);
-        engine.getArenaCm().getConfig().set("Arenas." + name, null);
+        engine.getArenaConfigManager().getConfig().set("Arenas." + name, null);
     }
 
     public void addPlayer(Player p, String st){
@@ -64,26 +64,26 @@ public class ArenaManager {
         for (String name : arenas.keySet()){
             Arena a = arenas.get(name);
 
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".engine", engine.getName());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".engine", engine.getName());
 
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMinPLayers());
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMaxPlayers());
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.x", a.getSpawn().getX());
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.y", a.getSpawn().getY());
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.z", a.getSpawn().getZ());
-            engine.getArenaCm().getConfig().set("Arenas." + a.getName() + ".spawn.world", a.getWorldName());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMinPLayers());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".minPlayers", a.getMaxPlayers());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".spawn.x", a.getSpawn().getX());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".spawn.y", a.getSpawn().getY());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".spawn.z", a.getSpawn().getZ());
+            engine.getArenaConfigManager().getConfig().set("Arenas." + a.getName() + ".spawn.world", a.getWorldName());
         }
     }
 
     public void loadArena(){
-        if (engine.getArenaCm().getConfig().getConfigurationSection("Arenas") != null) {
-            for (String st : engine.getArenaCm().getConfig().getConfigurationSection("Arenas").getKeys(false)) {
-                int minPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".minPlayers");
-                int maxPlayer = engine.getArenaCm().getConfig().getInt("Arenas." + st + ".maxPlayer");
-                double spawnX = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.x");
-                double spawnY = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.y");
-                double spawnZ = engine.getArenaCm().getConfig().getDouble("Arenas." + st + ".spawn.z");
-                String spawnWorld = engine.getArenaCm().getConfig().getString("Arenas." + st + ".spawn.world");
+        if (engine.getArenaConfigManager().getConfig().getConfigurationSection("Arenas") != null) {
+            for (String st : engine.getArenaConfigManager().getConfig().getConfigurationSection("Arenas").getKeys(false)) {
+                int minPlayer = engine.getArenaConfigManager().getConfig().getInt("Arenas." + st + ".minPlayers");
+                int maxPlayer = engine.getArenaConfigManager().getConfig().getInt("Arenas." + st + ".maxPlayer");
+                double spawnX = engine.getArenaConfigManager().getConfig().getDouble("Arenas." + st + ".spawn.x");
+                double spawnY = engine.getArenaConfigManager().getConfig().getDouble("Arenas." + st + ".spawn.y");
+                double spawnZ = engine.getArenaConfigManager().getConfig().getDouble("Arenas." + st + ".spawn.z");
+                String spawnWorld = engine.getArenaConfigManager().getConfig().getString("Arenas." + st + ".spawn.world");
                 Location spawn = new Location(Bukkit.getWorld(spawnWorld), spawnX, spawnY, spawnZ);
 
                 Arena a = new Arena(st, minPlayer, maxPlayer, spawn, engine);
@@ -93,6 +93,6 @@ public class ArenaManager {
     }
 
     public void clear(){
-        engine.getArenaCm().getConfig().set("Arenas", null);
+        engine.getArenaConfigManager().getConfig().set("Arenas", null);
     }
 }

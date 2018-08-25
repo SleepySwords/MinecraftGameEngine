@@ -2,7 +2,8 @@
   <artifact type="jar" name="McGameEngine">
     <output-path>$PROJECT_DIR$/../Test server/plugins</output-path>
     <root id="archive" name="McGameEngine.jar">
-      <element id="module-output" name="McGameEngine" />
+      <element id="library" level="project" name="Maven: commons-io:commons-io:1.3.2" />
+      <element id="module-output" name="McGameEngineV2" />
     </root>
   </artifact>
 </component>

@@ -8,115 +8,38 @@ package me.spirafy.game;
  */
 
 import me.spirafy.engine.Engine;
-import me.spirafy.engine.arenas.Arena;
-import me.spirafy.engine.arenas.GameState;
+import me.spirafy.engine.phase.onStart;
 import me.spirafy.engine.utils.ScoreboardUtil;
 import org.bukkit.Bukkit;
-import org.bukkit.ChatColor;
+import org.bukkit.Color;
 import org.bukkit.Location;
-import org.bukkit.entity.Player;
-import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
-import org.bukkit.scheduler.BukkitRunnable;
 
-public class KitPVP implements Arena.GameMethods {
-
+public class KitPVP {
     private Engine eng;
     private Main main;
     private ScoreboardUtil util;
 
-    public KitPVP(Main instance){
+    public KitPVP(Main instance) {
         this.main = instance;
-        eng = new Engine(this, "KitPVP", instance);
-        eng.getAm().loadArena();
-        eng.getAm().addArena("Test arena", 2, 10, new Location(Bukkit.getWorld("world"), 0, 0, 0));
-
-        util = new ScoreboardUtil("KitPVP", main);
-        util.setFrameSlot("Testing server", 4, 0);
-        util.setBlankSpot( 3, 0);
-        util.setFrameSlot("Welcome to kitpvp!", 2, 0);
-        util.setBlankSpot( 1, 0);
-        util.setFrameSlot( "Spirafy", 0, 0);
+        this.eng = new Engine("KitPVP", instance);
+        this.eng.getArenaManager().loadArena();
+        this.eng.getArenaManager().addArena("Test arena", 2, 10, new Location(Bukkit.getWorld("world"), 0.0D, 0.0D, 0.0D));
+        this.eng.getArenaManager().getArenas().forEach((s, arena) -> {
+            arena.registerPhase((new onStart()).setArena(arena));
+            arena.startPhase("Starting");
+            arena.addTeam("Blue", Color.BLUE);
+            arena.addTeam("red", Color.BLUE);
+        });
+        this.util = new ScoreboardUtil("KitPVP", this.main);
+        this.util.setFrameSlot("Testing server", 4, 0);
+        this.util.setBlankSpot(3, 0);
+        this.util.setFrameSlot("Welcome to kitpvp!", 2, 0);
+        this.util.setBlankSpot(1, 0);
+        this.util.setFrameSlot("Spirafy", 0, 0);
     }
 
-    public void disable(){
-        eng.getAm().clear();
-        eng.getAm().storeArena();
-    }
-
-    @Override
-    public void preLoad(Arena a) {
-        eng.getEm().listen((PlayerJoinEvent e) -> {
-            if (a.getState() == GameState.LOBBY) {
-                util.addPlayer(e.getPlayer());
-                a.addPlayer(e.getPlayer());
-                a.update(false);
-            }
-        }, main);
-
-        //Place intitialization methods here
-    }
-
-    @Override
-    public void onStart(Arena a) {
-
-        for(Player p : a.getPlayers()){
-            p.teleport(a.getSpawn());
-        }
-
-        new BukkitRunnable(){
-            int count = 10;
-            @Override
-            public void run(){
-                if (count <= 0){
-                    a.start();
-                    cancel();
-                }
-                for (Player p : a.getPlayers()){
-                    p.sendMessage("Starting in " + count);
-                }
-                count--;
-            }
-        }.runTaskTimer(main, 0, 20L);
-    }
-
-    @Override
-    public void midGame(Arena a) {
-        eng.getEm().listen((EntityDamageByEntityEvent e) -> {
-            if (!(e.getEntity() instanceof Player)){
-                return;
-            }
-            Player p = (Player) e.getEntity();
-            if (a.getPlayers().contains(p)){
-                e.setCancelled(true);
-                a.removePlayer(p);
-                a.update(true);
-            }
-        }, main);
-    }
-
-    @Override
-    public void onEnd(Arena a) {
-        for(Player p : a.getSpectators()){
-            p.sendMessage(ChatColor.GREEN + "The player " + a.getPlayers().get(0).getDisplayName() + " has won!");
-        }
-
-        for(Player p : a.getPlayers()){
-            p.sendMessage(ChatColor.GREEN + "The player " + a.getPlayers().get(0).getDisplayName() + " has won!");
-        }
-        a.getManager().deleteWorld(Bukkit.getWorld(a.getWorldName()));
-    }
-
-    @Override
-    public void update(Arena a, boolean started) {
-        if(started) {
-            if (a.getPlayers().size() == 1) {
-                a.end();
-            }
-        } else {
-            if (a.getPlayers().size() >= a.getMinPLayers()){
-                a.preStart();
-            }
-        }
+    public void disable() {
+        this.eng.getArenaManager().clear();
+        this.eng.getArenaManager().storeArena();
     }
 }

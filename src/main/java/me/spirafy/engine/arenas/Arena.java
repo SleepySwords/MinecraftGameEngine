@@ -9,93 +9,78 @@ package me.spirafy.engine.arenas;
 import com.google.common.collect.ArrayListMultimap;
 import com.google.common.collect.Multimap;
 import me.spirafy.engine.Engine;
+import me.spirafy.engine.managers.Team;
 import me.spirafy.engine.managers.WorldManager;
+import me.spirafy.engine.phase.Phase;
+import org.bukkit.Color;
 import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
-import java.util.ArrayList;
+import java.util.*;
+import java.util.stream.Stream;
 
 public class Arena {
     private String name;
-
+    private Engine engine;
     private int minPLayers;
     private int maxPlayers;
     private Location spawn;
     private String worldName;
-
     private Multimap<Object, Object> lists = ArrayListMultimap.create();
-    private ArrayList<Player> players = new ArrayList<Player>();
-    private ArrayList<Player> spectators = new ArrayList<Player>();
-
+    private List<Player> onlinePlayer = new ArrayList<>();
+    private List<Player> players = new ArrayList<>();
+    private List<Player> spectators = new ArrayList<>();
+    private Map<String, Phase> registeredPhases = new IdentityHashMap<>();
+    private Map<String, Phase> activePhases = new IdentityHashMap<>();
     private GameState state;
-    private Engine engInstance;
+    private List<Team> teams = new ArrayList<>();
     private WorldManager manager;
 
-    Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance){
+    public Arena(String name, int minPLayers, int maxPlayers, Location spawn, Engine engInstance) {
+        this.engine = engInstance;
         this.worldName = spawn.getWorld().getName();
         this.manager = new WorldManager();
         this.name = name;
         this.minPLayers = minPLayers;
         this.maxPlayers = maxPlayers;
         this.spawn = spawn;
-        this.spawn.setWorld(manager.copyFolder(spawn.getWorld(), "tmp_" + name));
+        this.spawn.setWorld(this.manager.copyFolder(spawn.getWorld(), "tmp_" + name));
         this.spawn = spawn;
-        this.engInstance = engInstance;
-        engInstance.getGm().preLoad(this);
-        state = GameState.LOBBY;
+        this.state = GameState.LOBBY;
     }
 
-    public void end(){
-        engInstance.getGm().onEnd(this);
-        state = GameState.ENDING;
-    }
-//hi
-    public void preStart(){
-        engInstance.getGm().onStart(this);
-        state = GameState.STARTING;
+    public List<Player> getPlayers() {
+        return this.players;
     }
 
-    public void start(){
-        engInstance.getGm().midGame(this);
-        state = GameState.MIDGAME;
+    public void addPlayer(Player p) {
+        this.players.add(p);
     }
 
-    public void update(boolean started){
-        engInstance.getGm().update(this, started);
+    public void removePlayer(Player p) {
+        this.players.remove(p);
+        this.spectators.add(p);
     }
 
-    public ArrayList<Player> getPlayers(){
-        return players;
+    public void removeSpectator(Player p) {
+        this.players.remove(p);
+        this.spectators.remove(p);
     }
 
-    public void addPlayer(Player p){
-        players.add(p);
+    public void addItem(Object identifier, Object value) {
+        this.lists.put(identifier, value);
     }
 
-    public void removePlayer(Player p){
-        players.remove(p);
-        spectators.add(p);
+    public void removeItem(Object identifier) {
+        this.lists.removeAll(identifier);
     }
 
-    public void removeSpectator(Player p){
-        players.remove(p);
-        spectators.remove(p);
-    }
-
-    public void addItem(Object identifier, Object value){
-        lists.put(identifier, value);
-    }
-
-    public void removeItem(Object identifier){
-        lists.removeAll(identifier);
-    }
-
-    public Object getItem(Object identifier){
-        return lists.get(identifier);
+    public Object getItem(Object identifier) {
+        return this.lists.get(identifier);
     }
 
     public String getName() {
-        return name;
+        return this.name;
     }
 
     public void setName(String name) {
@@ -103,7 +88,7 @@ public class Arena {
     }
 
     public int getMinPLayers() {
-        return minPLayers;
+        return this.minPLayers;
     }
 
     public void setMinPLayers(int minPLayers) {
@@ -111,7 +96,7 @@ public class Arena {
     }
 
     public int getMaxPlayers() {
-        return maxPlayers;
+        return this.maxPlayers;
     }
 
     public void setMaxPlayers(int maxPlayers) {
@@ -119,7 +104,7 @@ public class Arena {
     }
 
     public Location getSpawn() {
-        return spawn;
+        return this.spawn;
     }
 
     public void setSpawn(Location spawn) {
@@ -130,32 +115,80 @@ public class Arena {
         this.players = players;
     }
 
-    public ArrayList<Player> getSpectators() {
-        return spectators;
+    public List<Player> getSpectators() {
+        return this.spectators;
     }
 
     public String getWorldName() {
-        return worldName;
+        return this.worldName;
     }
 
     public WorldManager getManager() {
-        return manager;
+        return this.manager;
     }
 
     public GameState getState() {
-        return state;
+        return this.state;
     }
 
-    public interface GameMethods {
-        void preLoad(Arena a);
+    public void registerPhase(Phase phase) {
+        String name = phase.getName();
+        if (name == null) {
+            this.registeredPhases.put("phase" + this.registeredPhases.size(), phase);
+        }
 
-        void onStart(Arena a);
-
-        void midGame(Arena a);
-
-        void onEnd(Arena a);
-
-        void update(Arena a, boolean started);
+        this.registeredPhases.put(name, phase);
     }
 
+    public void startPhase(String name) {
+        this.activePhases.put(name, this.registeredPhases.get(name));
+        this.activePhases.get(name).setEngine(this.engine);
+        this.activePhases.get(name).setArena(this).setEnable(true);
+        this.activePhases.get(name).executeOnStart();
+        this.activePhases.get(name).start();
+    }
+
+    public void stopPhase(String name) {
+        if (this.activePhases.get(name) != null) {
+            this.activePhases.get(name).stop();
+            this.activePhases.remove(name);
+        }
+    }
+
+    public void unRegisterPhase(String name) {
+        if (this.registeredPhases.get(name) != null) {
+            this.stopPhase(name);
+            this.registeredPhases.remove(name);
+        }
+    }
+
+    public void addTeam(String name, Color color) {
+        this.teams.add(new Team(name, color));
+    }
+
+    public void removeTeam(String name) {
+        Stream<Team> streams = this.teams.stream().filter((team) -> team.getTeamName().equals(name));
+        Iterator<Team> iterator = streams.iterator();
+
+        while(iterator.hasNext()) {
+            this.teams.remove(iterator.next());
+        }
+
+    }
+
+    public void addPlayerToTeam(Player player, String name) {
+        Stream<Team> streams = this.teams.stream().filter((team) -> team.getTeamName().equals(name));
+        Iterator<Team> iterator = streams.iterator();
+        iterator.next().addPlayer(player);
+    }
+
+    public void removePlayerFromTeams(Player player) {
+        Stream<Team> streams = this.teams.stream().filter((team) -> team.getPlayers().contains(player));
+        Iterator iterator = streams.iterator();
+
+        while(iterator.hasNext()) {
+            ((Team)iterator.next()).removePlayer(player);
+        }
+
+    }
 }

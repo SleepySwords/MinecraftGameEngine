@@ -10,14 +10,14 @@ package me.spirafy.game;
 import org.bukkit.plugin.java.JavaPlugin;
 
 public class Main extends JavaPlugin {
-    @Override
-    public void onEnable(){
+    public Main() {
+    }
+
+    public void onEnable() {
         System.out.println("Hi");
         new KitPVP(this);
     }
 
-    @Override
-    public void onDisable(){
-
+    public void onDisable() {
     }
 }
