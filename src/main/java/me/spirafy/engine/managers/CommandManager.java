@@ -5,7 +5,9 @@ import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 public class CommandManager implements CommandExecutor {
@@ -24,7 +26,10 @@ public class CommandManager implements CommandExecutor {
         if (!command.getName().equalsIgnoreCase(cmdName)) return true;
         if (strings.length > 0) {
             if (commands.containsKey(strings[0].toLowerCase())) {
-                commands.get(strings[0]).accept(commandSender, command, s, strings);
+                List<String> TempArgs = Arrays.asList(strings);
+                TempArgs.remove(0);
+                String[] args = TempArgs.toArray(new String[TempArgs.size()]);
+                commands.get(strings[0]).accept(commandSender, command, s, args);
             }
         }else {
             mainCommand.accept(commandSender, command, s, strings);
