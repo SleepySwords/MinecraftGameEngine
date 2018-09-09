@@ -39,18 +39,20 @@ public class EventManager implements Listener {
         //registering a listener to be user
         //Listener listener = new Listener(this, ((listener1, event) -> eventConsumer.accept(event)), EventPriority.LOW, main, false);
 
-        Bukkit.getPluginManager().registerEvent(tClass, this, EventPriority.NORMAL, ((listener1, event) -> eventConsumer.accept(event)), main);
+        //Bukkit.getPluginManager().registerEvent(tClass, this, EventPriority.NORMAL, ((listener1, event) -> eventConsumer.accept(event)), main);
         Listener listener = new Listener(){
 
         };
         listeners.put(name, listener);
 
-        Bukkit.getPluginManager().registerEvent(tClass, listener, EventPriority.NORMAL, ((listener1, event) -> eventConsumer.accept(event)), main);
+        Bukkit.getPluginManager().registerEvent(tClass, listener, EventPriority.NORMAL, ((listener1, event) -> {
+            eventConsumer.accept(event);
+        }), main);
     }
 
-    public void removeListener(HandlerList list, String name) {
+    public <T extends Event> void removeListener(T event, String name) {
         if (listeners.containsKey(name)) {
-            list.unregister(listeners.get(name));
+            event.getHandlers().unregister(listeners.get(name));
             listeners.remove(name);
         }
     }
