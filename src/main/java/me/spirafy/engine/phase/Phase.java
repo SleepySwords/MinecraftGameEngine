@@ -25,19 +25,19 @@ public abstract class Phase implements Toggleable, Completable, Listener {
 
     public abstract String getName();
 
-    public <T extends Phase> T setEngine(Engine engine) {
+    public Phase setEngine(Engine engine) {
         this.engine = engine;
-        return (T) this;
+        return this;
     }
 
-    public <T extends Phase> T setArena(Arena arena) {
+    public Phase setArena(Arena arena) {
         this.arena = arena;
-        return (T) this;
+        return this;
     }
 
-    public <T extends Phase> T setTime(long timePerRound) {
+    public Phase setTime(long timePerRound) {
         this.timePerSecond = timePerRound;
-        return (T) this;
+        return this;
     }
 
     public boolean isCompleted() {

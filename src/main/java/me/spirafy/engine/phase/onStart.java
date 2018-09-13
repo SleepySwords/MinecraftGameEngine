@@ -6,6 +6,7 @@ package me.spirafy.engine.phase;
  * You can also contact him by his Discord: sword1234#6398
  */
 
+import me.spirafy.engine.managers.EventType;
 import org.bukkit.event.player.PlayerJoinEvent;
 
 import java.util.function.Consumer;
@@ -20,10 +21,10 @@ public class onStart extends Phase {
 
     public void content() {
         if (this.enabled) {
-            this.engine.getEventManager().listen((Consumer<PlayerJoinEvent>) e -> {
+            EventType type = this.engine.getEventManager().listen((Consumer<PlayerJoinEvent>) e -> {
                 e.setJoinMessage("s");
-            }, this.engine.getInstance(), "joinEvent");
-            this.engine.getEventManager().removeListener(PlayerJoinEvent.getHandlerList(), "joinEvent");
+            }, this.engine.getInstance());
+            type.unregisterAllEvent();
         }
 
     }
@@ -41,5 +42,9 @@ public class onStart extends Phase {
             this.arena.registerPhase(this);
         }
 
+    }
+
+    public void hi() {
+        this.setTime(20L);
     }
 }

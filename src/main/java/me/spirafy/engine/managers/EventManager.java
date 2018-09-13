@@ -8,17 +8,11 @@ package me.spirafy.engine.managers;
 
 
 import org.bukkit.Bukkit;
-import org.bukkit.event.Event;
-import org.bukkit.event.EventPriority;
-import org.bukkit.event.HandlerList;
-import org.bukkit.event.Listener;
+import org.bukkit.event.*;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.plugin.Plugin;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.function.Consumer;
 
 ;
@@ -26,9 +20,9 @@ import java.util.function.Consumer;
 public class EventManager implements Listener {
 
     public List<Map<Object, Object>> maps = new ArrayList<>();
-    public Map<String, Listener> listeners = new HashMap<>();
+    public List<EventType> eventTypes = new ArrayList<>();
 
-    public <T extends Event> void listen(Consumer<T> type, Plugin main, String name){
+    public <T extends Event> EventType listen(Consumer<T> type, Plugin main, EventPriority priority){
 
         //getting the class from the consumer.
         Class<T> tClass = (Class<T>) TypeResolver.resolveRawArgument(Consumer.class, type.getClass());
@@ -40,20 +34,33 @@ public class EventManager implements Listener {
         //Listener listener = new Listener(this, ((listener1, event) -> eventConsumer.accept(event)), EventPriority.LOW, main, false);
 
         //Bukkit.getPluginManager().registerEvent(tClass, this, EventPriority.NORMAL, ((listener1, event) -> eventConsumer.accept(event)), main);
-        Listener listener = new Listener(){
+        EventType event = new EventType();
 
-        };
-        listeners.put(name, listener);
-
-        Bukkit.getPluginManager().registerEvent(tClass, listener, EventPriority.NORMAL, ((listener1, event) -> {
-            eventConsumer.accept(event);
+        Bukkit.getPluginManager().registerEvent(tClass, event, priority, ((listener1, events) -> {
+            eventConsumer.accept(events);
         }), main);
+
+        eventTypes.add(event);
+        return event;
     }
 
-    public <T extends Event> void removeListener(T event, String name) {
-        if (listeners.containsKey(name)) {
-            event.getHandlers().unregister(listeners.get(name));
-            listeners.remove(name);
+    public <T extends Event> EventType listen(Consumer<T> type, Plugin main) {
+        return listen(type, main, EventPriority.NORMAL);
+    }
+
+    public <T extends Event> EventType listen(Consumer<T> type, EventType eventType, Plugin main){
+        eventType.listen(type,  EventPriority.NORMAL, main);
+        return eventType;
+    }
+
+    public <T extends Event> EventType listen(Consumer<T> type, EventType eventType, Plugin main, EventPriority eventPriority){
+        eventType.listen(type,  eventPriority, main);
+        return eventType;
+    }
+
+    public void unregisterAllEvents() {
+        for (EventType eventType : eventTypes) {
+            eventType.unregisterAllEvent();
         }
     }
 }
