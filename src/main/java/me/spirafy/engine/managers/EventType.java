@@ -15,7 +15,7 @@ public class EventType implements Listener{
         return this;
     }
 
-    public <T extends Event> void unregisterAllEvent(){
+    public void unregisterAllEvent(){
         HandlerList.unregisterAll(this);
     }
 
